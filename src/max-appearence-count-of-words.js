@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import {assign, chain} from 'lodash';
 import {getTokenizer} from 'kuromojin';
 
 const defaultOptions = {
@@ -25,7 +25,7 @@ function formatReport(word, count, limit, lang = 'en') {
 export default function (context, options = {}) {
     const {Syntax, report, getSource, RuleError} = context;
 
-    options = _.assign({}, defaultOptions, options);
+    options = assign({}, defaultOptions, options);
 
     let globalParagraphCount = 0;
     return {
@@ -37,7 +37,7 @@ export default function (context, options = {}) {
           return getTokenizer().then(tokenizer => {
             const tokens = tokenizer.tokenizeForSentence(paragraph);
 
-            _(tokens).chain()
+            chain(tokens)
               .uniq(token => token.surface_form)
               .filter(filterToken)
               .filter(token => (paragraph.split(token.surface_form).length - 1) > options.limit)
