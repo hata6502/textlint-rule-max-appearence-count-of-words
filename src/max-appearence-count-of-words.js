@@ -1,4 +1,4 @@
-import {assign, chain} from 'lodash';
+import assign from 'lodash.assign';
 import {getTokenizer} from 'kuromojin';
 
 const defaultOptions = {
@@ -36,13 +36,20 @@ export default function (context, options = {}) {
           // 非同期でkuromoji.jsの初期化&ロック&キャッシュ
           return getTokenizer().then(tokenizer => {
             const tokens = tokenizer.tokenizeForSentence(paragraph);
+            const uniqueTokens = [];
 
-            chain(tokens)
-              .uniq(token => token.surface_form)
+            tokens.forEach(token => {
+              if (uniqueTokens.some(uniqueToken => uniqueToken.surface_form === token.surface_form)) {
+                return;
+              }
+
+              uniqueTokens.push(token);
+            });
+
+            uniqueTokens
               .filter(filterToken)
               .filter(token => (paragraph.split(token.surface_form).length - 1) > options.limit)
-              .forEach(token => report(node, new RuleError(formatReport(token.surface_form, paragraphCount, options.limit, options.lang))))
-              .value();
+              .forEach(token => report(node, new RuleError(formatReport(token.surface_form, paragraphCount, options.limit, options.lang))));
           });
         }
     }
